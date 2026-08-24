@@ -1,5 +1,12 @@
 # RMX3760 Documentation Hub
 
+![Device](https://img.shields.io/badge/device-realme%20C53%20%7C%20RMX3760%20%7C%20RMX3762-blue)
+![SoC](https://img.shields.io/badge/SoC-Unisoc%20Tiger%20T612-red)
+![OS](https://img.shields.io/badge/Android-15%20%2F%20realme%20UI-brightgreen)
+![TEE](https://img.shields.io/badge/TEE-TrustOS%20%28ASTO%29-orange)
+![Topic](https://img.shields.io/badge/topics-fingerprint%20%C2%B7%20biometrics%20%C2%B7%20gatekeeper%20%C2%B7%20TEE%20%C2%B7%20Play%20Integrity-purple)
+![License](https://img.shields.io/badge/license-CC%20BY--SA%204.0-lightgrey)
+
 Technical documentation for the **realme C53** family — Unisoc T612 platform,
 updated to Android 15. Collected from hands-on investigation and verified public
 sources, written to be useful to owners, modders, and repair technicians working
