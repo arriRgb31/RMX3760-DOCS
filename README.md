@@ -88,13 +88,22 @@ English · CC BY-SA 4.0 · no binaries, no personal data.
 
 Start with [`fingerprint/README.md`](fingerprint/README.md).
 
+### [platform/](platform/) — Hardware & boot chain reference
+
+How this phone is really built, measured on a live unit: GKI kernel architecture
+(`android13-8` KMI under an Android 15 system), full boot chain from Unisoc BootROM
+through U-Boot and per-image AVB to TrustOS, all 82 partitions grouped by role,
+display subsystem (including why popular spec databases are wrong about its panel),
+touch controller, battery fuel-gauge reality versus marketing, and complete
+capability flags.
+
+Start with [`platform/README.md`](platform/README.md).
+
 ## Planned sections
 
 Placeholders for future documentation:
 
 - Bootloader unlock / root / recovery notes
-- Firmware layout and OTA structure
 - Engineering menu reference
-- Storage partition map
 
 Contributions welcome via pull request.
