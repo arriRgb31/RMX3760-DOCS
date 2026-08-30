@@ -164,6 +164,7 @@ Working code and tooling maintained alongside this documentation:
 | [RMX3760](https://github.com/arriRgb31/RMX3760) | Build makefiles |
 | [RMX3760-tools](https://github.com/arriRgb31/RMX3760-tools) | Unlock, AVB, DM-Verity, SELinux, root, TWRP, ADB/fastboot tool suite |
 | [spreadtrum_flash](https://github.com/arriRgb31/spreadtrum_flash) | Unisoc flashing protocol tooling (research fork) |
+| [RMX3760-Camera-Config](https://github.com/arriRgb31/RMX3760-Camera-Config) | Safe, non-permanent Magisk module: camera unlock (60fps, 3rd-party resolutions, 3DNR/ZSL/HDR toggles), built from the measurements on this page |
 
 See [fingerprint/](../fingerprint/) for the deep dive into the biometrics stack,
 including the storage arrangement shared with screen-lock credentials.
