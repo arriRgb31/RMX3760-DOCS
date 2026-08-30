@@ -112,6 +112,18 @@ The devicetree wires the touchscreen as an OmniVision TCM controller on SPI
 Himax parts. Worth remembering when sourcing replacement panels: digitizer
 firmware expectations ride along the display assembly supply chain.
 
+## Camera stack — two real sensors, mapped over I2C
+
+The rear "50 MP" and front "8 MP" are driven by a Samsung **S5KJN1** (rear) and an
+OmniVision **OV8856** (front), plus a fixed-focus depth lens — all identified
+directly from the devicetree I2C nodes without opening the camera app. Notably
+the main sensor exposes a hidden **3840×2160 (4K)** output bucket and **120 fps
+slow motion**, both unsurfaced by the stock camera app, while no lens on the
+device carries image stabilization and there is no ultrawide.
+
+Full measurement (sensor routing, every negotiated size, frame-rate and AI/HDR
+gates) lives in [`platform/camera.md`](camera.md).
+
 ## Battery — what sysfs says versus the box
 
 Marketing says 5000 mAh typical. The fuel gauge reports a **design capacity of
