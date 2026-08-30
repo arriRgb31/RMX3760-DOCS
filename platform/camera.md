@@ -152,6 +152,79 @@ Read from `dumpsys media.camera` `com.addParameters.*` on the **rear** camera
 the standard auto / night / portrait / landscape set plus the vendor custom
 modes (`100+`) used by the realme camera app (Night, AI, etc.).
 
+## 6. HAL binary analysis — the EIS / capability question
+
+The `availableVideoStabilizationModes = [0]` above says "no electronic
+stabilization" through the *standard* Camera2 control. But the stock metadata
+understates the silicon here, and the proof lives in the HAL binary itself
+(`/vendor/lib64/hw/camera.unisoc.so`) plus the running property set.
+
+### EIS is real on this platform — it just runs through the vendor path
+
+Disassembling the string table of `camera.unisoc.so` (1.8 MB core HAL) reveals
+the engine that the metadata layer hides:
+
+```
+sprdEisEnabled            sprdStabilityCurrent
+setNeedStability          "set sprd_need_stability = 0"
+VideoStable %d            sprd3dnrEnabled
+is_capture_hw_3dnr        sprd3availableAuto3dnr
+```
+
+These are read by the HAL from the live property namespace:
+
+| Property | Live value | Meaning |
+|---|---|---|
+| `ro.media.recoderEIS.enabled` | `true` | recorder-level EIS flag enabled |
+| `persist.vendor.cam.dv.ba.eispro.enable` | `1` | **EIS Pro (DIS deblur + stabilization) ON** |
+| `persist.vendor.cam.3dnr.enable` | `0` | 3D noise reduction **OFF** |
+| `persist.vendor.cam.eois.enable` | `0` | extra OIS variant OFF |
+| `camera.disable_zsl_mode` | `1` | ZSL forced OFF |
+| `persist.vendor.cam.raw.output.enable` | `1` | RAW sensor output ON |
+| `persist.vendor.cam.back.high.cap` | `50M_hulk` | 50 MP high-res capture profile active |
+
+So the platform runs **DIS/EIS-Pro from the vendor path** while *not* advertising
+it as a Camera2 `VideoStabilizationMode`. This is why enabling "EIS" cannot be
+done by changing a single metadata flag — it lives behind vendor-tag gates
+(`sprdEisEnabled` / `setNeedStability`) and is engaged per video mode.
+
+### What that means for enabling EIS via a Magisk module
+
+- **Reachable safely (config / property only, no `.so` patch):**
+  - `persist.vendor.cam.3dnr.enable = 1` — switch the already-present 3DNR
+    tuning blocks on (the `s5kjn1_sunny` `cfg.xml` carries a `3DNR` block).
+  - `camera.disable_zsl_mode = 0` — restore zero-shutter-lag capture.
+  - The DIS/EIS-Pro path is *already enabled*; it is engaged per mode by the
+    camera app, so it can be made the default in recording without binary work.
+- **Not reachable safely (needs a `.so` binary patch → risky):**
+  - exposing a standard `VideoStabilizationMode` toggle to Camera2 clients, and
+  - forcing EIS across *every* third-party app. That would require replacing
+    `camera.device@3.5-impl-sprd.so` / patching `camera.unisoc.so`, at real risk
+    of a camera-provider crash loop.
+
+### Camera capabilities hidden behind properties
+
+Beyond stabilization, the HAL exposes several quality switches purely through
+`persist.vendor.cam.*` properties that a root-only (Magisk `resetprop`) change
+can flip without touching a partition:
+
+| Property | Live | Effect when changed |
+|---|---|---|
+| `persist.vendor.cam.3dnr.enable` | `0` | 3DNR (noise) processing |
+| `persist.vendor.cam.normalhdr` | `0` | normal HDR path |
+| `persist.vendor.cam.spot_en` | `0` | spot metering refinement |
+| `persist.vendor.cam.sprdUltraDistortionCorrectEnable` | `0` | ultra-distortion correction |
+| `persist.vendor.cam.eois.enable` | `0` | EOIS switch |
+| `persist.vendor.cam.video.face.beauty.enable` | `0` | video face beautify |
+| `persist.vendor.cam.sensitivityRange.id0` | `50,1600` | rear ISO ceiling |
+| `persist.vendor.cam.sensitivityRange.id1` | `50,9000` | front ISO ceiling |
+
+None of these are permanent in the partition sense — set at runtime they only
+last until reset, which is exactly the property a "safe, non-permanent" module
+wants. (See the partitioning/mount notes in this section's summary; changing
+`/odm/etc/camera/*` and firmware tuning via bind-mount is fully reversible by
+uninstalling the module.)
+
 ## Summary table
 
 | Camera | Sensor | Aperture | Focal | Active array | Output sizes | Video |
@@ -161,7 +234,10 @@ modes (`100+`) used by the realme camera app (Night, AI, etc.).
 | Front | OmniVision OV8856 | f/2.0 | 2.76 mm | 3264×2448 | still 3264×2448; 1080p | 30 fps max; no EIS |
 
 None of the three mounted lenses is a true ultrawide or macro; the "dual rear
-camera" second element is the fixed-focus depth assistant. No camera on the
-device has optical or electronic stabilization.
+camera" second element is the fixed-focus depth assistant. There is no *optical*
+stabilization on any lens, and no standard Camera2 *electronic* stabilization is
+exposed — but the vendor DIS/EIS-Pro engine is present and enabled at the
+property level (see §6), so effective video stabilization exists in the stock
+recording path rather than through the public API.
 
 Licensed CC BY-SA 4.0 together with the rest of this repository.

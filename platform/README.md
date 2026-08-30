@@ -118,11 +118,19 @@ The rear "50 MP" and front "8 MP" are driven by a Samsung **S5KJN1** (rear) and 
 OmniVision **OV8856** (front), plus a fixed-focus depth lens — all identified
 directly from the devicetree I2C nodes without opening the camera app. Notably
 the main sensor exposes a hidden **3840×2160 (4K)** output bucket and **120 fps
-slow motion**, both unsurfaced by the stock camera app, while no lens on the
-device carries image stabilization and there is no ultrawide.
+slow motion**, both unsurfaced by the stock camera app.
 
-Full measurement (sensor routing, every negotiated size, frame-rate and AI/HDR
-gates) lives in [`platform/camera.md`](camera.md).
+Stabilization deserves its own note: there is no *optical* stabilization and no
+standard Camera2 *electronic* stabilization exposed, yet a full EIS engine lives
+in the HAL binary (`sprdEisEnabled` / DIS EIS-Pro) and is enabled at the property
+level (`persist.vendor.cam.dv.ba.eispro.enable=1`) — it runs through the vendor
+recording path rather than the public API. Several quality switches (3DNR, ZSL,
+HDR, distortion correction) are likewise reachable purely via `persist.vendor.cam.*`
+properties.
+
+Full measurement (sensor routing, every negotiated size, frame-rate, AI/HDR gates,
+and the EIS/capability analysis) lives in
+[`platform/camera.md`](camera.md).
 
 ## Battery — what sysfs says versus the box
 
